@@ -1,9 +1,34 @@
 import Pyro4
+import queue
+from productDB import ProductDB
 
 @Pyro4.expose
 class hi:
 	def hi(self):
 		return 'hello'
+
+class Dispatcher_Fetch(object):
+	def __init__(self):
+		self.fetch_all = queue.Queue()
+		self.resultqueue = queue.Queue()
+	def putWork(self, item):
+		self.fetch_all.put(item)
+	def getwork(self, timeout = 5):
+		try: 
+			return self.fetch_all.get(block=True, timeout=timeout)
+		except queue.Empty:
+			raise ValueError("no items in queue")
+	def putResult(self, item):
+		self.resultqueue.put(item)
+	def getResult(self, timeout=5):
+		try: 
+			return self.resultqueue.get(block=True, timeout=timeout)
+		except queue.Empty:
+			raise ValueError("no result available")
+	def workqueueSize(self):
+		return self.fetch_all.qsize()
+	def resultQueueSize(self):
+		return self.resultqueue.qsize()
 
 # Example of entering and removing from database 
 #	def __init__ (self, name):

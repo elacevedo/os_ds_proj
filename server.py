@@ -3,6 +3,7 @@ import queue
 from productDB import ProductDB
 
 @Pyro4.expose
+@Pyro4.behavior(instance_mode="single") #register object to be processes concurrently. 
 class hi:
 	def hi(self):
 		return 'hello'

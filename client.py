@@ -1,21 +1,33 @@
 import Pyro4
+import os
+import socket
 
-o = Pyro4.Proxy("PYRO:server@ipaddress:55555") #enter ip address of server.
+CLIENTNAME = "Client_%d@%s" % (os.getpid(), socket.gethostname())
 
-print(o.putWork("test"))
-#print(o.getwork())
+def placecalls(o):
+        print("Placing database calls....")
+        calls = [[CLIENTNAME, "Create", "Water", 1200, 12, 1.00],
+                [CLIENTNAME, "Create", "Backpack", 1201, 5, 20.00],
+                [CLIENTNAME, "DB"],
+                [CLIENTNAME, "Change", "Water", "Name", "Bottled Water"],
+                [CLIENTNAME, "Search", "Bottled Water"]]
+        for i in range(5):
+                o.putWork(calls[i])
 
-
-item = o.getwork()
-
-#worker code
-def processdatabase():
-	o.putResult(item + "1")
-	print(o.getResult())
-
-
+def collectresults(o):
+        print("Getting back results....")
+        counter = 0
+        while counter != 5:
+                try:
+                        result = o.getResult(CLIENTNAME)
+                        counter = counter + 1
+                        print(result)
+                except:
+                        pass
+		
 def main():
-	processdatabase() 
+        o = Pyro4.Proxy("PYRO:server@ipaddress:55555") #enter ip address of server.        print("This program simulates a client making calls and changes to a datab$        placecalls(o)
+        collectresults(o)
 
 if __name__ == "__main__":
     main()

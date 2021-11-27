@@ -20,10 +20,11 @@ def collectresults(o):
         while counter != 5:
                 try:
                         result = o.getResult(CLIENTNAME)
-                        counter = counter + 1
-                        print(result)
                 except:
                         pass
+		else:
+			counter = counter + 1
+			print(result)
 		
 def main():
         o = Pyro4.Proxy("PYRO:server@ipaddress:55555") #enter ip address of server.        print("This program simulates a client making calls and changes to a datab$        placecalls(o)

@@ -1,6 +1,9 @@
 import Pyro4
 import queue
+from queue import Queue
+from threading import * 
 
+obj = Semaphore()
 @Pyro4.expose
 @Pyro4.behavior(instance_mode="single") #register object to be processes concurrently.
 class Dispatcher(object):
@@ -8,22 +11,34 @@ class Dispatcher(object):
                 self.data = queue.Queue()
                 self.resultqueue = queue.Queue()
                 self.clients = []
+                self.datalist = []
+                self.resultlist= []
+
         def putWork(self, item):
+                obj.acquire()
                 self.data.put(item)
+                self.datalist.append(item)
+                #print(self.datalist)
                 print("item in queue")
+                obj.release()
         def getwork(self, timeout = 5):
-                try:
-                        return self.data.get(block=True, timeout=timeout)
-                except queue.Empty:
-                        raise ValueError("no items in queue")
+                while True:
+                        try:
+                                return self.datalist.pop()
+                        except IndexError:
+                                pass
         def putResult(self, item):
+                obj.acquire()
                 self.resultqueue.put(item)
+                self.resultlist.append(item)
                 print("item in results queue")
+                obj.release()
         def getResult(self, client, timeout=5):
-                try:
-                        return self.resultqueue.get(block=True, timeout=timeout)
-                except queue.Empty:
-                        raise ValueError("no result available")
+                while True:
+                        try: 
+                                return self.resultlist.pop()
+                        except IndexError:
+                                pass
         def workqueueSize(self):
                 return self.data.qsize()
         def resultQueueSize(self):
